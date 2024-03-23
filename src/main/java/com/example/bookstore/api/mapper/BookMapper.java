@@ -16,10 +16,10 @@ public interface BookMapper {
   Book toProto(com.example.bookstore.api.domain.Book book);
 
   @Mapping(target = "id", ignore = true)
-  com.example.bookstore.api.domain.Book createToModel(CreateBook createBook);
+  com.example.bookstore.api.domain.Book toModel(CreateBook createBook);
 
-  @Mapping(target = "id", expression = "java(toUuid(book.getId())")
-  com.example.bookstore.api.domain.Book protoToModel(Book book);
+  @Mapping(target = "id", expression = "java(toUuid(book.getId()))")
+  com.example.bookstore.api.domain.Book toModel(Book book);
 
   default BookId toBookId(UUID id) {
     return BookId.newBuilder().setId(id.toString()).build();

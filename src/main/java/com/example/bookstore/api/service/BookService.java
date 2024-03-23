@@ -30,7 +30,8 @@ public class BookService extends ReactorBookServiceGrpc.BookServiceImplBase {
   @Override
   public Mono<Book> create(Mono<CreateBook> request) {
     return bookRepository
-        .saveAll(request.map(BookMapper.INSTANCE::createToModel))
+        .saveAll(
+            request.map(BookMapper.INSTANCE::toModel).map(book -> book.setId(UUID.randomUUID())))
         .map(BookMapper.INSTANCE::toProto)
         .single();
   }
@@ -40,7 +41,7 @@ public class BookService extends ReactorBookServiceGrpc.BookServiceImplBase {
     return bookRepository
         .findById(getUuid(request.map(Book::getId)))
         .then(request)
-        .flatMap(book -> bookRepository.save(BookMapper.INSTANCE.protoToModel(book)))
+        .flatMap(book -> bookRepository.save(BookMapper.INSTANCE.toModel(book)))
         .thenReturn(UpdateResponse.newBuilder().setStatus(ResponseStatus.OK).build())
         .defaultIfEmpty(UpdateResponse.newBuilder().setStatus(ResponseStatus.NOT_FOUND).build());
   }
