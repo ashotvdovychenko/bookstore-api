@@ -3,12 +3,11 @@ package com.example.bookstore.api.mapper;
 import com.example.bookstore.proto.Book;
 import com.example.bookstore.proto.BookId;
 import com.example.bookstore.proto.CreateBook;
-import java.util.UUID;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface BookMapper {
   BookMapper INSTANCE = Mappers.getMapper(BookMapper.class);
 
@@ -18,14 +17,10 @@ public interface BookMapper {
   @Mapping(target = "id", ignore = true)
   com.example.bookstore.api.domain.Book toModel(CreateBook createBook);
 
-  @Mapping(target = "id", expression = "java(toUuid(book.getId()))")
+  @Mapping(target = "id", source = "id.id")
   com.example.bookstore.api.domain.Book toModel(Book book);
 
-  default BookId toBookId(UUID id) {
-    return BookId.newBuilder().setId(id.toString()).build();
-  }
-
-  default UUID toUuid(BookId bookId) {
-    return UUID.fromString(bookId.getId());
+  default BookId toBookId(String id) {
+    return BookId.newBuilder().setId(id).build();
   }
 }
