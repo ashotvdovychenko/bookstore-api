@@ -1,0 +1,56 @@
+syntax = "proto3";
+option java_multiple_files = true;
+package com.example.bookstore.proto;
+
+message BookId {
+  string id = 1;
+}
+
+message Book {
+  BookId id = 1;
+  string author = 2;
+  string title = 3;
+  string isbn = 4;
+  int32 quantity = 5;
+}
+
+message Books {
+  repeated Book books = 1;
+}
+
+message CreateBook {
+  string author = 1;
+  string title = 2;
+  string isbn = 3;
+  int32 quantity = 4;
+}
+
+message UpdateResponse {
+  ResponseStatus status = 1;
+}
+
+message DeleteResponse {
+  ResponseStatus status = 1;
+  Book book = 2;
+}
+
+message GetResponse {
+    ResponseStatus status = 1;
+    Book book = 2;
+}
+
+message GetAllBooks {
+}
+
+enum ResponseStatus {
+  OK = 0;
+  NOT_FOUND = 1;
+}
+
+service BookService {
+  rpc getAll(GetAllBooks) returns (stream Book);
+  rpc getById(BookId) returns (GetResponse);
+  rpc create(CreateBook) returns (Book);
+  rpc update(Book) returns (UpdateResponse);
+  rpc delete(BookId) returns (DeleteResponse);
+}
