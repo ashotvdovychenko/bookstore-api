@@ -26,25 +26,30 @@ message CreateBook {
 }
 
 message UpdateResponse {
-  ResponseStatus status = 1;
+  Response response = 1;
 }
 
 message DeleteResponse {
-  ResponseStatus status = 1;
+  Response response = 1;
   Book book = 2;
 }
 
 message GetResponse {
-    ResponseStatus status = 1;
+  Response response = 1;
     Book book = 2;
 }
 
-message GetAllBooks {
+message Response {
+  string description = 1;
+  enum Status {
+    OK = 0;
+    NOT_FOUND = 1;
+    ERROR = 2;
+  }
+  Status status = 2;
 }
 
-enum ResponseStatus {
-  OK = 0;
-  NOT_FOUND = 1;
+message GetAllBooks {
 }
 
 service BookService {
