@@ -1,24 +1,30 @@
 package com.example.bookstore.api.mapper;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.bookstore.api.domain.Book;
 import com.example.bookstore.proto.BookId;
+import com.example.bookstore.proto.CreateBook;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class BookMapperTest {
 
   @Test
-  void toProtoSuccessful() {
+  void toProto() {
     var id = UUID.randomUUID();
     var title = "Title";
     var isbn = "Isbn";
     var author = "Ivan Kyrylov";
     var quantity = 5;
     var book =
-        Book.builder().id(id).author(author).isbn(isbn).title(title).quantity(quantity).build();
+        Book.newBuilder()
+            .setId(id)
+            .setAuthor(author)
+            .setIsbn(isbn)
+            .setTitle(title)
+            .setQuantity(quantity)
+            .build();
 
     var expected =
         com.example.bookstore.proto.Book.newBuilder()
@@ -30,29 +36,61 @@ class BookMapperTest {
             .build();
     var actual = BookMapper.INSTANCE.toProto(book);
 
-    assertEquals(actual, expected);
+    assertThat(actual).isEqualTo(expected);
   }
 
   @Test
-  void toProtoFailed() {
-    var id = UUID.randomUUID();
+  void toModelFromCreateBook() {
     var title = "Title";
     var isbn = "Isbn";
     var author = "Ivan Kyrylov";
     var quantity = 5;
-    var book =
-        Book.builder().id(id).author(author).isbn(isbn).title(title).quantity(quantity).build();
-
-    var expected =
-        com.example.bookstore.proto.Book.newBuilder()
-            .setId(BookId.newBuilder().setId("").build())
+    var createBook =
+        CreateBook.newBuilder()
             .setAuthor(author)
             .setIsbn(isbn)
             .setTitle(title)
             .setQuantity(quantity)
             .build();
-    var actual = BookMapper.INSTANCE.toProto(book);
 
-    assertThat(actual).isNotEqualTo(expected);
+    var expected =
+        Book.newBuilder()
+            .setTitle(title)
+            .setAuthor(author)
+            .setIsbn(isbn)
+            .setQuantity(quantity)
+            .build();
+    var actual = BookMapper.INSTANCE.toModel(createBook);
+
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  void toModelFromProtoBook() {
+    var id = UUID.randomUUID();
+    var title = "Title";
+    var isbn = "Isbn";
+    var author = "Ivan Kyrylov";
+    var quantity = 5;
+    var protoBook =
+        com.example.bookstore.proto.Book.newBuilder()
+            .setId(BookId.newBuilder().setId(id.toString()).build())
+            .setAuthor(author)
+            .setIsbn(isbn)
+            .setTitle(title)
+            .setQuantity(quantity)
+            .build();
+
+    var expected =
+        Book.newBuilder()
+            .setId(id)
+            .setTitle(title)
+            .setIsbn(isbn)
+            .setAuthor(author)
+            .setQuantity(quantity)
+            .build();
+    var actual = BookMapper.INSTANCE.toModel(protoBook);
+
+    assertThat(actual).isEqualTo(expected);
   }
 }
