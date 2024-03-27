@@ -1,8 +1,9 @@
-package com.example.bookstore.api;
+package com.example.bookstore.api.utils;
 
 import com.example.bookstore.api.domain.Book;
 import com.example.bookstore.proto.BookId;
 import com.example.bookstore.proto.CreateBook;
+import com.example.bookstore.proto.GetAllBooks;
 
 public final class TestData {
 
@@ -13,7 +14,11 @@ public final class TestData {
   public static final Integer QUANTITY = 10;
   public static final Book BOOK = getBook(ID);
   public static final com.example.bookstore.proto.Book PROTO_BOOK = getProtoBook(ID);
+  public static final BookId BOOK_ID = getBookId(ID);
+
   public static final CreateBook CREATE_BOOK = getCreateBook();
+
+  public static final GetAllBooks GET_ALL_BOOKS = getGetAllBooks();
 
   private TestData() {}
 
@@ -37,6 +42,10 @@ public final class TestData {
         .build();
   }
 
+  public static BookId getBookId(String id) {
+    return BookId.newBuilder().setId(id).build();
+  }
+
   public static CreateBook getCreateBook() {
     return CreateBook.newBuilder()
         .setAuthor(AUTHOR)
@@ -44,5 +53,9 @@ public final class TestData {
         .setIsbn(ISBN)
         .setQuantity(QUANTITY)
         .build();
+  }
+
+  public static GetAllBooks getGetAllBooks() {
+    return GetAllBooks.newBuilder().build();
   }
 }

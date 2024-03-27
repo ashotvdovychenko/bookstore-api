@@ -15,9 +15,11 @@ public interface BookMapper {
   Book toProto(com.example.bookstore.api.domain.Book book);
 
   @Mapping(target = "id", ignore = true)
+  @Mapping(target = "isNew", ignore = true)
   com.example.bookstore.api.domain.Book toModel(CreateBook createBook);
 
   @Mapping(target = "id", source = "id.id")
+  @Mapping(target = "isNew", ignore = true)
   com.example.bookstore.api.domain.Book toModel(Book book);
 
   default BookId toBookId(String id) {

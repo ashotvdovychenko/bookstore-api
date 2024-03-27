@@ -2,7 +2,7 @@ package com.example.bookstore.api.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.example.bookstore.api.TestData;
+import com.example.bookstore.api.utils.TestData;
 import org.junit.jupiter.api.Test;
 
 class BookMapperTest {

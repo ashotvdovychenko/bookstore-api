@@ -1,0 +1,1 @@
+INSERT INTO books (id, title, author, isbn, quantity) VALUES ('ID', 'Title', 'Author', 'ISBN', 10);
