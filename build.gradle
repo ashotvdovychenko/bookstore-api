@@ -15,9 +15,13 @@ java {
 
 ext {
     grpcProtobufVersion = '1.62.2'
+    grpcApiVersion = '1.58.0'
     grpcAllVersion = '1.25.0'
     googleProtobufVersion = '3.10.0'
     reactorGrpcStubVersion = '1.2.4'
+    grpcServerVersion = '2.15.0.RELEASE'
+
+    citrusVersion = "4.1.1"
 
     lombokVersion = '1.18.32'
     mapstructVersion = '1.5.5.Final'
@@ -34,7 +38,11 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+    implementation "net.devh:grpc-server-spring-boot-starter:${grpcServerVersion}"
+    implementation "net.devh:grpc-client-spring-boot-starter:${grpcServerVersion}"
     implementation "io.grpc:grpc-protobuf:${grpcProtobufVersion}"
+    implementation "io.grpc:grpc-api:${grpcApiVersion}"
+
     compileOnly "io.grpc:grpc-all:${grpcAllVersion}"
     implementation "io.grpc:grpc-stub:${grpcProtobufVersion}"
     compileOnly "com.google.protobuf:protobuf-java:${googleProtobufVersion}"
@@ -42,10 +50,22 @@ dependencies {
 
     testImplementation 'io.projectreactor:reactor-test'
     runtimeOnly 'org.postgresql:r2dbc-postgresql'
+    implementation 'org.postgresql:postgresql:42.7.3'
 
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    testImplementation 'org.testcontainers:postgresql:1.19.7'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.7'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers:3.2.4'
+
+    testImplementation "org.citrusframework:citrus-base:${citrusVersion}"
+    testImplementation "org.citrusframework:citrus-junit5:${citrusVersion}"
+    testImplementation "org.citrusframework:citrus-spring:${citrusVersion}"
+    testImplementation "org.citrusframework:citrus-sql:${citrusVersion}"
+
+    implementation "org.projectlombok:lombok:${lombokVersion}"
+    testImplementation "org.projectlombok:lombok:${lombokVersion}"
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}", "org.projectlombok:lombok:${lombokVersion}", "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructBinding}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 }
 
 protobuf {

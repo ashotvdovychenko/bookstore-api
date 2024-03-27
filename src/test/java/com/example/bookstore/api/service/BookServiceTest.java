@@ -1,6 +1,6 @@
 package com.example.bookstore.api.service;
 
-import static com.example.bookstore.api.TestData.*;
+import static com.example.bookstore.api.utils.TestData.*;
 import static org.mockito.Mockito.*;
 
 import com.example.bookstore.api.mapper.BookMapper;
