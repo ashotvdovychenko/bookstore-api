@@ -1,7 +1,6 @@
 package com.example.bookstore.api.integration;
 
 import com.example.bookstore.api.config.CitrusTestConfiguration;
-import com.example.bookstore.api.testcontainers.Containers;
 import com.example.bookstore.proto.*;
 import org.citrusframework.TestActionRunner;
 import org.citrusframework.annotations.CitrusResource;
@@ -14,9 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
+import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import javax.sql.DataSource;
+import java.io.File;
 
 import static com.example.bookstore.api.util.ResponseUtils.NOT_FOUND;
 import static com.example.bookstore.api.util.ResponseUtils.OK;
@@ -28,7 +30,7 @@ import static org.citrusframework.actions.ExecuteSQLAction.Builder.sql;
 @SpringBootTest
 @CitrusSpringSupport
 @ContextConfiguration(classes = {CitrusSpringConfig.class, CitrusTestConfiguration.class})
-public class BookServiceIntegrationTest extends Containers {
+public class BookServiceIntegrationTest {
 
   @CitrusResource private TestActionRunner runner;
 
@@ -40,6 +42,24 @@ public class BookServiceIntegrationTest extends Containers {
   public void clean() {
     runner.$(sql().dataSource(dataSource).statement("delete from BOOKS"));
   }
+
+  @Container
+  private final DockerComposeContainer<?> dockerComposeContainer = new DockerComposeContainer<>(new File("docker-compose.yml"));
+
+//  @Container
+//  private final PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:16.2")
+//          .withPassword("test")
+//            .withUsername("test")
+//            .withDatabaseName("test")
+//            .withExposedPorts(5432)
+//            .withInitScript("postgres/init_script.sql");
+//
+//  @Container
+//  private final GenericContainer<?> applicationContainer =
+//          new GenericContainer<>()
+//                  .withExtraHost("host.docker.internal", "host-gateway")
+//                  .withExposedPorts(9090)
+//                  .dependsOn(postgreSQLContainer);
 
   @Test
   @CitrusTest
