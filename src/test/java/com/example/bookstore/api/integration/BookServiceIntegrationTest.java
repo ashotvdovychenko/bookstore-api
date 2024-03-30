@@ -7,8 +7,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.citrusframework.actions.ExecuteSQLAction.Builder.sql;
 
 import com.example.bookstore.api.config.CitrusTestConfiguration;
+import com.example.bookstore.api.util.ResponseUtils;
 import com.example.bookstore.proto.*;
 import java.io.File;
+import java.util.List;
 import javax.sql.DataSource;
 import org.citrusframework.TestActionRunner;
 import org.citrusframework.annotations.CitrusResource;
@@ -52,9 +54,14 @@ public class BookServiceIntegrationTest {
   public void getAll() {
     runner.$(sql(dataSource).sqlResource("create-book.sql"));
 
-    var actual = client.getAll(GET_ALL_BOOKS).blockFirst();
+    var actual = client.getAll(GET_ALL_BOOKS).block();
+    var expected =
+        GetAllResponse.newBuilder()
+            .addAllBooks(List.of(PROTO_BOOK))
+            .setResponse(ResponseUtils.OK)
+            .build();
 
-    assertThat(actual).isEqualTo(PROTO_BOOK);
+    assertThat(actual).isEqualTo(expected);
     runner.$(
         sql(dataSource)
             .query()
@@ -72,9 +79,9 @@ public class BookServiceIntegrationTest {
     runner.$(sql(dataSource).sqlResource("create-book.sql"));
 
     var actual = client.getById(BOOK_ID).block();
+    var expected = BookResponse.newBuilder().setResponse(OK).setBook(PROTO_BOOK).build();
 
-    assertThat(actual)
-        .isEqualTo(GetResponse.newBuilder().setResponse(OK).setBook(PROTO_BOOK).build());
+    assertThat(actual).isEqualTo(expected);
     runner.$(
         sql()
             .dataSource(dataSource)
@@ -91,8 +98,9 @@ public class BookServiceIntegrationTest {
   @CitrusTest
   public void getByIdIfNotFound() {
     var actual = client.getById(getBookId(ID)).block();
+    var expected = BookResponse.newBuilder().setResponse(NOT_FOUND).build();
 
-    assertThat(actual).isEqualTo(GetResponse.newBuilder().setResponse(NOT_FOUND).build());
+    assertThat(actual).isEqualTo(expected);
     runner.$(
         sql()
             .dataSource(dataSource)
@@ -107,6 +115,7 @@ public class BookServiceIntegrationTest {
     var actual = client.create(CREATE_BOOK).block();
 
     assertThat(actual).isNotNull();
+    assertThat(actual.getBook()).isNotNull();
     runner.$(
         sql()
             .dataSource(dataSource)
@@ -124,8 +133,9 @@ public class BookServiceIntegrationTest {
     runner.$(sql(dataSource).sqlResource("create-book.sql"));
 
     var actual = client.update(PROTO_BOOK).block();
+    var expected = UpdateResponse.newBuilder().setResponse(OK).build();
 
-    assertThat(actual).isEqualTo(UpdateResponse.newBuilder().setResponse(OK).build());
+    assertThat(actual).isEqualTo(expected);
     runner.$(
         sql()
             .dataSource(dataSource)
@@ -142,8 +152,9 @@ public class BookServiceIntegrationTest {
   @CitrusTest
   public void updateIfNotFound() {
     var actual = client.update(getProtoBook(ID)).block();
+    var expected = UpdateResponse.newBuilder().setResponse(NOT_FOUND).build();
 
-    assertThat(actual).isEqualTo(UpdateResponse.newBuilder().setResponse(NOT_FOUND).build());
+    assertThat(actual).isEqualTo(expected);
     runner.$(
         sql()
             .dataSource(dataSource)
@@ -158,9 +169,9 @@ public class BookServiceIntegrationTest {
     runner.$(sql(dataSource).sqlResource("create-book.sql"));
 
     var actual = client.delete(BookId.newBuilder().setId(ID).build()).block();
+    var expected = DeleteResponse.newBuilder().setBook(PROTO_BOOK).setResponse(OK).build();
 
-    assertThat(actual)
-        .isEqualTo(DeleteResponse.newBuilder().setBook(PROTO_BOOK).setResponse(OK).build());
+    assertThat(actual).isEqualTo(expected);
     runner.$(
         sql()
             .dataSource(dataSource)
@@ -173,8 +184,9 @@ public class BookServiceIntegrationTest {
   @CitrusTest
   public void deleteIfNotFound() {
     var actual = client.delete(BookId.newBuilder().setId(ID).build()).block();
+    var expected = DeleteResponse.newBuilder().setResponse(NOT_FOUND).build();
 
-    assertThat(actual).isEqualTo(DeleteResponse.newBuilder().setResponse(NOT_FOUND).build());
+    assertThat(actual).isEqualTo(expected);
     runner.$(
         sql()
             .dataSource(dataSource)

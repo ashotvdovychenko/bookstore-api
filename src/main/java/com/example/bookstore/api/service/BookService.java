@@ -8,7 +8,6 @@ import com.example.bookstore.proto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
@@ -22,42 +21,64 @@ public class BookService extends ReactorBookServiceGrpc.BookServiceImplBase {
   private final IdGenerator<String> idGenerator;
 
   @Override
-  public Flux<Book> getAll(Mono<GetAllBooks> request) {
+  public Mono<GetAllResponse> getAll(Mono<GetAllBooks> request) {
     return bookRepository
         .findAll()
         .log()
         .map(bookMapper::toProto)
-        .doOnError(error -> log.error(error.getMessage()));
-  }
-
-  @Override
-  public Mono<GetResponse> getById(Mono<BookId> request) {
-    return request
-        .map(BookId::getId)
-        .flatMap(bookRepository::findById)
-        .map(bookMapper::toProto)
-        .map(book -> GetResponse.newBuilder().setBook(book).setResponse(ResponseUtils.OK).build())
-        .defaultIfEmpty(GetResponse.newBuilder().setResponse(ResponseUtils.NOT_FOUND).build())
+        .collectList()
+        .map(
+            books ->
+                GetAllResponse.newBuilder()
+                    .addAllBooks(books)
+                    .setResponse(ResponseUtils.OK)
+                    .build())
         .doOnError(error -> log.error(error.getMessage()))
         .onErrorResume(
             Throwable.class,
             error ->
                 Mono.just(
-                    GetResponse.newBuilder()
+                    GetAllResponse.newBuilder()
                         .setResponse(ResponseUtils.error(error.getMessage()))
                         .build()));
   }
 
   @Override
-  public Mono<Book> create(Mono<CreateBook> request) {
+  public Mono<BookResponse> getById(Mono<BookId> request) {
+    return request
+        .map(BookId::getId)
+        .flatMap(bookRepository::findById)
+        .map(bookMapper::toProto)
+        .map(book -> BookResponse.newBuilder().setBook(book).setResponse(ResponseUtils.OK).build())
+        .defaultIfEmpty(BookResponse.newBuilder().setResponse(ResponseUtils.NOT_FOUND).build())
+        .doOnError(error -> log.error(error.getMessage()))
+        .onErrorResume(
+            Throwable.class,
+            error ->
+                Mono.just(
+                    BookResponse.newBuilder()
+                        .setResponse(ResponseUtils.error(error.getMessage()))
+                        .build()));
+  }
+
+  @Override
+  public Mono<BookResponse> create(Mono<CreateBook> request) {
     return request
         .log()
         .map(bookMapper::toModel)
         .map(book -> book.setId(idGenerator.generate()))
         .flatMap(bookRepository::save)
         .map(bookMapper::toProto)
+        .map(book -> BookResponse.newBuilder().setBook(book).setResponse(ResponseUtils.OK).build())
         .single()
-        .doOnError(error -> log.error(error.getMessage()));
+        .doOnError(error -> log.error(error.getMessage()))
+        .onErrorResume(
+            Throwable.class,
+            error ->
+                Mono.just(
+                    BookResponse.newBuilder()
+                        .setResponse(ResponseUtils.error(error.getMessage()))
+                        .build()));
   }
 
   @Override
