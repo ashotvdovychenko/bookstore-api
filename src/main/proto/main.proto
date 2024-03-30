@@ -34,9 +34,14 @@ message DeleteResponse {
   Book book = 2;
 }
 
-message GetResponse {
+message BookResponse {
   Response response = 1;
     Book book = 2;
+}
+
+message GetAllResponse {
+  Response response = 1;
+  repeated Book books = 2;
 }
 
 message Response {
@@ -53,9 +58,9 @@ message GetAllBooks {
 }
 
 service BookService {
-  rpc getAll(GetAllBooks) returns (stream Book);
-  rpc getById(BookId) returns (GetResponse);
-  rpc create(CreateBook) returns (Book);
+  rpc getAll(GetAllBooks) returns (GetAllResponse);
+  rpc getById(BookId) returns (BookResponse);
+  rpc create(CreateBook) returns (BookResponse);
   rpc update(Book) returns (UpdateResponse);
   rpc delete(BookId) returns (DeleteResponse);
 }

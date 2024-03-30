@@ -8,6 +8,7 @@ import com.example.bookstore.api.repository.BookRepository;
 import com.example.bookstore.api.util.IdGenerator;
 import com.example.bookstore.api.util.ResponseUtils;
 import com.example.bookstore.proto.*;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,11 +42,13 @@ class BookServiceTest {
     when(bookMapper.toProto(secondBook)).thenReturn(secondProtoBook);
 
     var actual = bookService.getAll(Mono.just(GetAllBooks.newBuilder().build()));
+    var expected =
+        GetAllResponse.newBuilder()
+            .addAllBooks(List.of(firstProtoBook, secondProtoBook))
+            .setResponse(ResponseUtils.OK)
+            .build();
 
-    StepVerifier.create(actual)
-        .expectNext(firstProtoBook, secondProtoBook)
-        .expectComplete()
-        .verify();
+    StepVerifier.create(actual).expectNext(expected).expectComplete().verify();
   }
 
   @Test
@@ -55,7 +58,7 @@ class BookServiceTest {
 
     var actual = bookService.getById(Mono.just(BookId.newBuilder().setId(ID).build()));
     var expected =
-        GetResponse.newBuilder().setBook(PROTO_BOOK).setResponse(ResponseUtils.OK).build();
+        BookResponse.newBuilder().setBook(PROTO_BOOK).setResponse(ResponseUtils.OK).build();
 
     StepVerifier.create(actual).expectNext(expected).expectComplete().verify();
   }
@@ -65,7 +68,7 @@ class BookServiceTest {
     when(bookRepository.findById(ID)).thenReturn(Mono.empty());
 
     var actual = bookService.getById(Mono.just(BookId.newBuilder().setId(ID).build()));
-    var expected = GetResponse.newBuilder().setResponse(ResponseUtils.NOT_FOUND).build();
+    var expected = BookResponse.newBuilder().setResponse(ResponseUtils.NOT_FOUND).build();
 
     StepVerifier.create(actual).expectNext(expected).expectComplete().verify();
   }
@@ -77,7 +80,7 @@ class BookServiceTest {
     when(bookRepository.findById(ID)).thenThrow(exception);
 
     var actual = bookService.getById(Mono.just(BookId.newBuilder().setId(ID).build()));
-    var expected = GetResponse.newBuilder().setResponse(ResponseUtils.error(message)).build();
+    var expected = BookResponse.newBuilder().setResponse(ResponseUtils.error(message)).build();
 
     StepVerifier.create(actual).expectNext(expected).expectComplete().verify();
   }
@@ -90,8 +93,10 @@ class BookServiceTest {
     when(idGenerator.generate()).thenReturn(ID);
 
     var actual = bookService.create(Mono.just(CREATE_BOOK));
+    var expected =
+        BookResponse.newBuilder().setBook(PROTO_BOOK).setResponse(ResponseUtils.OK).build();
 
-    StepVerifier.create(actual).expectNext(PROTO_BOOK).expectComplete().verify();
+    StepVerifier.create(actual).expectNext(expected).expectComplete().verify();
   }
 
   @Test
