@@ -125,7 +125,7 @@ def citrusTestTask = tasks.register("citrusTest", Test) {
     classpath = sourceSets.citrusTest.runtimeClasspath
 
     useJUnitPlatform()
-    mustRunAfter test
+    dependsOn assemble
 }
 
 tasks.named('test') {

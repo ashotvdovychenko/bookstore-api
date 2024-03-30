@@ -3,6 +3,7 @@ package com.example.bookstore.api.service;
 import static com.example.bookstore.api.utils.TestData.*;
 import static org.mockito.Mockito.*;
 
+import com.example.bookstore.api.domain.Book;
 import com.example.bookstore.api.mapper.BookMapper;
 import com.example.bookstore.api.repository.BookRepository;
 import com.example.bookstore.api.util.IdGenerator;
@@ -41,12 +42,22 @@ class BookServiceTest {
     when(bookMapper.toProto(firstBook)).thenReturn(firstProtoBook);
     when(bookMapper.toProto(secondBook)).thenReturn(secondProtoBook);
 
-    var actual = bookService.getAll(Mono.just(GetAllBooks.newBuilder().build()));
+    var actual = bookService.getAll(Mono.just(GET_ALL_BOOKS));
     var expected =
         GetAllResponse.newBuilder()
             .addAllBooks(List.of(firstProtoBook, secondProtoBook))
             .setResponse(ResponseUtils.OK)
             .build();
+
+    StepVerifier.create(actual).expectNext(expected).expectComplete().verify();
+  }
+
+  @Test
+  void getAllIfEmpty() {
+    when(bookRepository.findAll()).thenReturn(Flux.<Book>empty().take(1));
+
+    var actual = bookService.getAll(Mono.just(GET_ALL_BOOKS));
+    var expected = GetAllResponse.newBuilder().setResponse(ResponseUtils.OK).build();
 
     StepVerifier.create(actual).expectNext(expected).expectComplete().verify();
   }
