@@ -71,6 +71,20 @@ public class BookServiceIntegrationTest {
 
   @Test
   @CitrusTest
+  public void getAllIfEmpty() {
+    var actual = client.getAll(TestData.GET_ALL_BOOKS).block();
+    var expected = GetAllResponse.newBuilder().setResponse(ResponseUtils.OK).build();
+
+    assertThat(actual).isEqualTo(expected);
+    runner.$(
+        sql(dataSource)
+            .query()
+            .statement("select count(*) as ROWCOUNT from BOOKS")
+            .validate("ROWCOUNT", "0"));
+  }
+
+  @Test
+  @CitrusTest
   public void getByIdIfPresent() {
     runner.$(sql(dataSource).sqlResource("create-book.sql"));
 
@@ -83,8 +97,7 @@ public class BookServiceIntegrationTest {
 
     assertThat(actual).isEqualTo(expected);
     runner.$(
-        sql()
-            .dataSource(dataSource)
+        sql(dataSource)
             .query()
             .statement("select * from BOOKS where ID = %s".formatted(TestData.ID))
             .validate("id", TestData.ID)
@@ -102,8 +115,7 @@ public class BookServiceIntegrationTest {
 
     assertThat(actual).isEqualTo(expected);
     runner.$(
-        sql()
-            .dataSource(dataSource)
+        sql(dataSource)
             .query()
             .statement("select count(*) as ROWCOUNT from BOOKS")
             .validate("ROWCOUNT", "0"));
@@ -117,8 +129,7 @@ public class BookServiceIntegrationTest {
     assertThat(actual).isNotNull();
     assertThat(actual.getBook()).isNotNull();
     runner.$(
-        sql()
-            .dataSource(dataSource)
+        sql(dataSource)
             .query()
             .statement("select * from BOOKS")
             .validate("title", TestData.TITLE)
@@ -137,8 +148,7 @@ public class BookServiceIntegrationTest {
 
     assertThat(actual).isEqualTo(expected);
     runner.$(
-        sql()
-            .dataSource(dataSource)
+        sql(dataSource)
             .query()
             .statement("select * from BOOKS where ID = %s".formatted(TestData.ID))
             .validate("id", TestData.ID)
@@ -156,8 +166,7 @@ public class BookServiceIntegrationTest {
 
     assertThat(actual).isEqualTo(expected);
     runner.$(
-        sql()
-            .dataSource(dataSource)
+        sql(dataSource)
             .query()
             .statement("select count(*) as ROWCOUNT from BOOKS")
             .validate("ROWCOUNT", "0"));
@@ -177,8 +186,7 @@ public class BookServiceIntegrationTest {
 
     assertThat(actual).isEqualTo(expected);
     runner.$(
-        sql()
-            .dataSource(dataSource)
+        sql(dataSource)
             .query()
             .statement(
                 "select count(*) as ROWCOUNT from BOOKS where ID = '%s'".formatted(TestData.ID))
@@ -193,8 +201,7 @@ public class BookServiceIntegrationTest {
 
     assertThat(actual).isEqualTo(expected);
     runner.$(
-        sql()
-            .dataSource(dataSource)
+        sql(dataSource)
             .query()
             .statement(
                 "select count(*) as ROWCOUNT from BOOKS where ID = '%s'".formatted(TestData.ID))
