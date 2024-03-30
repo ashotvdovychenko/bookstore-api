@@ -1,13 +1,11 @@
-package com.example.bookstore.api.integration;
+package com.example.bookstore.api.service;
 
-import static com.example.bookstore.api.util.ResponseUtils.NOT_FOUND;
-import static com.example.bookstore.api.util.ResponseUtils.OK;
-import static com.example.bookstore.api.utils.TestData.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.citrusframework.actions.ExecuteSQLAction.Builder.sql;
 
 import com.example.bookstore.api.config.CitrusTestConfiguration;
 import com.example.bookstore.api.util.ResponseUtils;
+import com.example.bookstore.api.utils.TestData;
 import com.example.bookstore.proto.*;
 import java.io.File;
 import java.util.List;
@@ -20,14 +18,12 @@ import org.citrusframework.junit.jupiter.spring.CitrusSpringSupport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
-@SpringBootTest
 @CitrusSpringSupport
 @ContextConfiguration(classes = {CitrusSpringConfig.class, CitrusTestConfiguration.class})
 public class BookServiceIntegrationTest {
@@ -54,10 +50,10 @@ public class BookServiceIntegrationTest {
   public void getAll() {
     runner.$(sql(dataSource).sqlResource("create-book.sql"));
 
-    var actual = client.getAll(GET_ALL_BOOKS).block();
+    var actual = client.getAll(TestData.GET_ALL_BOOKS).block();
     var expected =
         GetAllResponse.newBuilder()
-            .addAllBooks(List.of(PROTO_BOOK))
+            .addAllBooks(List.of(TestData.PROTO_BOOK))
             .setResponse(ResponseUtils.OK)
             .build();
 
@@ -66,11 +62,11 @@ public class BookServiceIntegrationTest {
         sql(dataSource)
             .query()
             .statement("select * from BOOKS")
-            .validate("id", ID)
-            .validate("title", TITLE)
-            .validate("author", AUTHOR)
-            .validate("isbn", ISBN)
-            .validate("quantity", String.valueOf(QUANTITY)));
+            .validate("id", TestData.ID)
+            .validate("title", TestData.TITLE)
+            .validate("author", TestData.AUTHOR)
+            .validate("isbn", TestData.ISBN)
+            .validate("quantity", String.valueOf(TestData.QUANTITY)));
   }
 
   @Test
@@ -78,27 +74,31 @@ public class BookServiceIntegrationTest {
   public void getByIdIfPresent() {
     runner.$(sql(dataSource).sqlResource("create-book.sql"));
 
-    var actual = client.getById(BOOK_ID).block();
-    var expected = BookResponse.newBuilder().setResponse(OK).setBook(PROTO_BOOK).build();
+    var actual = client.getById(TestData.BOOK_ID).block();
+    var expected =
+        BookResponse.newBuilder()
+            .setResponse(ResponseUtils.OK)
+            .setBook(TestData.PROTO_BOOK)
+            .build();
 
     assertThat(actual).isEqualTo(expected);
     runner.$(
         sql()
             .dataSource(dataSource)
             .query()
-            .statement("select * from BOOKS where ID = %s".formatted(ID))
-            .validate("id", ID)
-            .validate("title", TITLE)
-            .validate("author", AUTHOR)
-            .validate("isbn", ISBN)
-            .validate("quantity", String.valueOf(QUANTITY)));
+            .statement("select * from BOOKS where ID = %s".formatted(TestData.ID))
+            .validate("id", TestData.ID)
+            .validate("title", TestData.TITLE)
+            .validate("author", TestData.AUTHOR)
+            .validate("isbn", TestData.ISBN)
+            .validate("quantity", String.valueOf(TestData.QUANTITY)));
   }
 
   @Test
   @CitrusTest
   public void getByIdIfNotFound() {
-    var actual = client.getById(getBookId(ID)).block();
-    var expected = BookResponse.newBuilder().setResponse(NOT_FOUND).build();
+    var actual = client.getById(TestData.getBookId(TestData.ID)).block();
+    var expected = BookResponse.newBuilder().setResponse(ResponseUtils.NOT_FOUND).build();
 
     assertThat(actual).isEqualTo(expected);
     runner.$(
@@ -112,7 +112,7 @@ public class BookServiceIntegrationTest {
   @Test
   @CitrusTest
   public void create() {
-    var actual = client.create(CREATE_BOOK).block();
+    var actual = client.create(TestData.CREATE_BOOK).block();
 
     assertThat(actual).isNotNull();
     assertThat(actual.getBook()).isNotNull();
@@ -121,10 +121,10 @@ public class BookServiceIntegrationTest {
             .dataSource(dataSource)
             .query()
             .statement("select * from BOOKS")
-            .validate("title", TITLE)
-            .validate("author", AUTHOR)
-            .validate("isbn", ISBN)
-            .validate("quantity", String.valueOf(QUANTITY)));
+            .validate("title", TestData.TITLE)
+            .validate("author", TestData.AUTHOR)
+            .validate("isbn", TestData.ISBN)
+            .validate("quantity", String.valueOf(TestData.QUANTITY)));
   }
 
   @Test
@@ -132,27 +132,27 @@ public class BookServiceIntegrationTest {
   public void updateIfPresent() {
     runner.$(sql(dataSource).sqlResource("create-book.sql"));
 
-    var actual = client.update(PROTO_BOOK).block();
-    var expected = UpdateResponse.newBuilder().setResponse(OK).build();
+    var actual = client.update(TestData.PROTO_BOOK).block();
+    var expected = UpdateResponse.newBuilder().setResponse(ResponseUtils.OK).build();
 
     assertThat(actual).isEqualTo(expected);
     runner.$(
         sql()
             .dataSource(dataSource)
             .query()
-            .statement("select * from BOOKS where ID = %s".formatted(ID))
-            .validate("id", ID)
-            .validate("title", TITLE)
-            .validate("author", AUTHOR)
-            .validate("isbn", ISBN)
-            .validate("quantity", String.valueOf(QUANTITY)));
+            .statement("select * from BOOKS where ID = %s".formatted(TestData.ID))
+            .validate("id", TestData.ID)
+            .validate("title", TestData.TITLE)
+            .validate("author", TestData.AUTHOR)
+            .validate("isbn", TestData.ISBN)
+            .validate("quantity", String.valueOf(TestData.QUANTITY)));
   }
 
   @Test
   @CitrusTest
   public void updateIfNotFound() {
-    var actual = client.update(getProtoBook(ID)).block();
-    var expected = UpdateResponse.newBuilder().setResponse(NOT_FOUND).build();
+    var actual = client.update(TestData.getProtoBook(TestData.ID)).block();
+    var expected = UpdateResponse.newBuilder().setResponse(ResponseUtils.NOT_FOUND).build();
 
     assertThat(actual).isEqualTo(expected);
     runner.$(
@@ -168,30 +168,36 @@ public class BookServiceIntegrationTest {
   public void deleteIfPresent() {
     runner.$(sql(dataSource).sqlResource("create-book.sql"));
 
-    var actual = client.delete(BookId.newBuilder().setId(ID).build()).block();
-    var expected = DeleteResponse.newBuilder().setBook(PROTO_BOOK).setResponse(OK).build();
+    var actual = client.delete(BookId.newBuilder().setId(TestData.ID).build()).block();
+    var expected =
+        DeleteResponse.newBuilder()
+            .setBook(TestData.PROTO_BOOK)
+            .setResponse(ResponseUtils.OK)
+            .build();
 
     assertThat(actual).isEqualTo(expected);
     runner.$(
         sql()
             .dataSource(dataSource)
             .query()
-            .statement("select count(*) as ROWCOUNT from BOOKS where ID = '%s'".formatted(ID))
+            .statement(
+                "select count(*) as ROWCOUNT from BOOKS where ID = '%s'".formatted(TestData.ID))
             .validate("ROWCOUNT", "0"));
   }
 
   @Test
   @CitrusTest
   public void deleteIfNotFound() {
-    var actual = client.delete(BookId.newBuilder().setId(ID).build()).block();
-    var expected = DeleteResponse.newBuilder().setResponse(NOT_FOUND).build();
+    var actual = client.delete(BookId.newBuilder().setId(TestData.ID).build()).block();
+    var expected = DeleteResponse.newBuilder().setResponse(ResponseUtils.NOT_FOUND).build();
 
     assertThat(actual).isEqualTo(expected);
     runner.$(
         sql()
             .dataSource(dataSource)
             .query()
-            .statement("select count(*) as ROWCOUNT from BOOKS where ID = '%s'".formatted(ID))
+            .statement(
+                "select count(*) as ROWCOUNT from BOOKS where ID = '%s'".formatted(TestData.ID))
             .validate("ROWCOUNT", "0"));
   }
 }
