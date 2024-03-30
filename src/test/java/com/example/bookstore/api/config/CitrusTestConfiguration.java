@@ -15,10 +15,10 @@ public class CitrusTestConfiguration {
   public DataSource dataSource() {
     return DataSourceBuilder.create()
         .type(DriverManagerDataSource.class)
-        .password("test")
-        .username("test")
-        .driverClassName("org.testcontainers.jdbc.ContainerDatabaseDriver")
-        .url("jdbc:tc:postgresql://localhost:5432/test")
+        .password("localdb")
+        .username("localdb")
+        .driverClassName("org.postgresql.Driver")
+        .url("jdbc:postgresql://localhost:5432/localdb")
         .build();
   }
 

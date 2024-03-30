@@ -1,7 +1,15 @@
 package com.example.bookstore.api.integration;
 
+import static com.example.bookstore.api.util.ResponseUtils.NOT_FOUND;
+import static com.example.bookstore.api.util.ResponseUtils.OK;
+import static com.example.bookstore.api.utils.TestData.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.citrusframework.actions.ExecuteSQLAction.Builder.sql;
+
 import com.example.bookstore.api.config.CitrusTestConfiguration;
 import com.example.bookstore.proto.*;
+import java.io.File;
+import javax.sql.DataSource;
 import org.citrusframework.TestActionRunner;
 import org.citrusframework.annotations.CitrusResource;
 import org.citrusframework.annotations.CitrusTest;
@@ -12,19 +20,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.jdbc.Sql;
-import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import javax.sql.DataSource;
-import java.io.File;
-
-import static com.example.bookstore.api.util.ResponseUtils.NOT_FOUND;
-import static com.example.bookstore.api.util.ResponseUtils.OK;
-import static com.example.bookstore.api.utils.TestData.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.citrusframework.actions.ExecuteSQLAction.Builder.sql;
 
 @Testcontainers
 @SpringBootTest
@@ -44,33 +42,21 @@ public class BookServiceIntegrationTest {
   }
 
   @Container
-  private final DockerComposeContainer<?> dockerComposeContainer = new DockerComposeContainer<>(new File("docker-compose.yml"));
-
-//  @Container
-//  private final PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:16.2")
-//          .withPassword("test")
-//            .withUsername("test")
-//            .withDatabaseName("test")
-//            .withExposedPorts(5432)
-//            .withInitScript("postgres/init_script.sql");
-//
-//  @Container
-//  private final GenericContainer<?> applicationContainer =
-//          new GenericContainer<>()
-//                  .withExtraHost("host.docker.internal", "host-gateway")
-//                  .withExposedPorts(9090)
-//                  .dependsOn(postgreSQLContainer);
+  private static final ComposeContainer dockerComposeContainer =
+      new ComposeContainer(new File("docker-compose.yml"))
+          .withExposedService("api", 9090)
+          .withExposedService("postgres", 5432);
 
   @Test
   @CitrusTest
-  @Sql("/create-book.sql")
   public void getAll() {
+    runner.$(sql(dataSource).sqlResource("create-book.sql"));
+
     var actual = client.getAll(GET_ALL_BOOKS).blockFirst();
 
     assertThat(actual).isEqualTo(PROTO_BOOK);
     runner.$(
-        sql()
-            .dataSource(dataSource)
+        sql(dataSource)
             .query()
             .statement("select * from BOOKS")
             .validate("id", ID)
@@ -82,8 +68,9 @@ public class BookServiceIntegrationTest {
 
   @Test
   @CitrusTest
-  @Sql("/create-book.sql")
   public void getByIdIfPresent() {
+    runner.$(sql(dataSource).sqlResource("create-book.sql"));
+
     var actual = client.getById(BOOK_ID).block();
 
     assertThat(actual)
@@ -133,8 +120,9 @@ public class BookServiceIntegrationTest {
 
   @Test
   @CitrusTest
-  @Sql("/create-book.sql")
   public void updateIfPresent() {
+    runner.$(sql(dataSource).sqlResource("create-book.sql"));
+
     var actual = client.update(PROTO_BOOK).block();
 
     assertThat(actual).isEqualTo(UpdateResponse.newBuilder().setResponse(OK).build());
@@ -166,8 +154,9 @@ public class BookServiceIntegrationTest {
 
   @Test
   @CitrusTest
-  @Sql("/create-book.sql")
   public void deleteIfPresent() {
+    runner.$(sql(dataSource).sqlResource("create-book.sql"));
+
     var actual = client.delete(BookId.newBuilder().setId(ID).build()).block();
 
     assertThat(actual)

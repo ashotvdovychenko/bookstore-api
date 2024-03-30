@@ -5,20 +5,21 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      SPRING_PROFILES_ACTIVE: dev
-      SPRING_R2DBC_URL: r2dbc:postgresql://postgres_db:5432/localdb
+      SPRING_R2DBC_URL: r2dbc:postgresql://postgres:5432/localdb
       SPRING_R2DBC_USERNAME: localdb
       SPRING_R2DBC_PASSWORD: localdb
       SPRING_APPLICATION_NAME: bookstore-api
     ports:
       - '9090:9090'
     depends_on:
-      - postgres_db
-  postgres_db:
+      - postgres
+  postgres:
     image: postgres:15.3-alpine
     environment:
       POSTGRES_DB: localdb
       POSTGRES_USER: localdb
       POSTGRES_PASSWORD: localdb
+    volumes:
+      - ./src/test/resources/postgres/init_script.sql://docker-entrypoint-initdb.d/init_script.sql
     ports:
       - '5432:5432'
