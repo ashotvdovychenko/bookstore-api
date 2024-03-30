@@ -20,6 +20,6 @@ services:
       POSTGRES_USER: localdb
       POSTGRES_PASSWORD: localdb
     volumes:
-      - ./src/test/resources/postgres/init_script.sql://docker-entrypoint-initdb.d/init_script.sql
+      - ./src/citrusTest/resources/postgres/init_script.sql://docker-entrypoint-initdb.d/init_script.sql
     ports:
       - '5432:5432'

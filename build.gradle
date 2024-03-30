@@ -13,6 +13,10 @@ java {
     sourceCompatibility = '17'
 }
 
+sourceSets {
+    citrusTest
+}
+
 ext {
     grpcProtobufVersion = '1.62.2'
     grpcApiVersion = '1.58.0'
@@ -34,38 +38,45 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+    citrusTestImplementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    citrusTestImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     implementation "net.devh:grpc-server-spring-boot-starter:${grpcServerVersion}"
     implementation "net.devh:grpc-client-spring-boot-starter:${grpcServerVersion}"
     implementation "io.grpc:grpc-protobuf:${grpcProtobufVersion}"
     implementation "io.grpc:grpc-api:${grpcApiVersion}"
+    citrusTestImplementation "io.grpc:grpc-api:${grpcApiVersion}"
 
     compileOnly "io.grpc:grpc-all:${grpcAllVersion}"
     implementation "io.grpc:grpc-stub:${grpcProtobufVersion}"
     compileOnly "com.google.protobuf:protobuf-java:${googleProtobufVersion}"
     implementation "com.salesforce.servicelibs:reactor-grpc-stub:${reactorGrpcStubVersion}"
+    citrusTestImplementation "io.grpc:grpc-all:${grpcAllVersion}"
 
     testImplementation 'io.projectreactor:reactor-test'
+    citrusTestImplementation 'io.projectreactor:reactor-test'
     runtimeOnly 'org.postgresql:r2dbc-postgresql'
     implementation 'org.postgresql:postgresql:42.7.3'
-
-    testImplementation 'org.testcontainers:postgresql:1.19.7'
-    testImplementation 'org.testcontainers:junit-jupiter:1.19.7'
-    testImplementation 'org.springframework.boot:spring-boot-testcontainers:3.2.4'
-
-    testImplementation "org.citrusframework:citrus-base:${citrusVersion}"
-    testImplementation "org.citrusframework:citrus-junit5:${citrusVersion}"
-    testImplementation "org.citrusframework:citrus-spring:${citrusVersion}"
-    testImplementation "org.citrusframework:citrus-sql:${citrusVersion}"
 
     implementation "org.projectlombok:lombok:${lombokVersion}"
     testImplementation "org.projectlombok:lombok:${lombokVersion}"
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}", "org.projectlombok:lombok:${lombokVersion}", "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructBinding}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    citrusTestImplementation 'org.testcontainers:postgresql:1.19.7'
+    citrusTestImplementation 'org.testcontainers:junit-jupiter:1.19.7'
+    citrusTestImplementation 'org.springframework.boot:spring-boot-testcontainers:3.2.4'
+
+    citrusTestImplementation "org.citrusframework:citrus-base:${citrusVersion}"
+    citrusTestImplementation "org.citrusframework:citrus-junit5:${citrusVersion}"
+    citrusTestImplementation "org.citrusframework:citrus-spring:${citrusVersion}"
+    citrusTestImplementation "org.citrusframework:citrus-sql:${citrusVersion}"
+
+    citrusTestImplementation(project)
 }
 
 protobuf {
@@ -105,6 +116,16 @@ spotless {
 
         formatAnnotations()
     }
+}
+
+def citrusTestTask = tasks.register("citrusTest", Test) {
+    description = 'Runs the citrus tests.'
+    group = "verification"
+    testClassesDirs = sourceSets.citrusTest.output.classesDirs
+    classpath = sourceSets.citrusTest.runtimeClasspath
+
+    useJUnitPlatform()
+    mustRunAfter test
 }
 
 tasks.named('test') {
